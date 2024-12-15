@@ -1100,5 +1100,18 @@
     "RabbitMQ Nodes": "RabbitMQ 管理节点",
     "Separate multiple email addresses with commas": "用逗号分隔多个电子邮件地址",
     "rabbitmqHelpText": "要使用此监控项，您需要在 RabbitMQ 设置中启用管理插件。有关更多信息，请参阅 {rabitmq_documentation}。",
-    "aboutSlackUsername": "更改消息发件人的显示名称。如果您想提及某人，请另行将其包含在友好名称中。"
+    "aboutSlackUsername": "更改消息发件人的显示名称。如果您想提及某人，请另行将其包含在友好名称中。",
+    "Bot Name": "机器人名称",
+    "Secret": "密钥",
+    "Use Custom API": "使用自定义API",
+    "Custom API URL": "API 地址",
+    "Bark Authorization": "Bark 认证",
+    "Auto Save Notification": "自动保存通知消息",
+    "Auto Save Notification Description": "自动保存通知到 Bark App 历史记录",
+    "Important Alert": "重要警告",
+    "Important Alert Description": "重要警告会忽略静音设置和勿扰模式，无论设备是否静音，通知都会提示并播放声音。",
+    "Alert Volume": "提示音量",
+    "Continuous Ring": "持续响铃",
+    "Continuous Ring Description": "通知铃声将重复播放30秒，同时收到多个通知时将按顺序依次响铃。",
+    "Custom Icon URL": "自定义推送图标（需 iOS 15 或以上）"
 }

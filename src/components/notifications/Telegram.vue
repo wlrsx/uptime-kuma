@@ -1,10 +1,57 @@
 <template>
     <div class="mb-3">
         <label for="telegram-bot-token" class="form-label">{{ $t("Bot Token") }}</label>
-        <HiddenInput id="telegram-bot-token" v-model="$parent.notification.telegramBotToken" :required="true" autocomplete="new-password"></HiddenInput>
+        <HiddenInput id="telegram-bot-token" v-model="$parent.notification.telegramBotToken" :required="!$parent.notification.useCustomAPI" :is-disabled="$parent.notification.useCustomAPI" autocomplete="new-password"></HiddenInput>
         <i18n-t tag="div" keypath="wayToGetTelegramToken" class="form-text">
             <a href="https://t.me/BotFather" target="_blank">https://t.me/BotFather</a>
         </i18n-t>
+    </div>
+
+    <div class="mb-3">
+        <div class="form-check form-switch">
+            <input
+                id="use-custom-api"
+                v-model="$parent.notification.useCustomAPI"
+                type="checkbox"
+                class="form-check-input"
+            />
+            <label class="form-check-label" for="use-custom-api">
+                {{ $t("Use Custom API") }}
+            </label>
+        </div>
+    </div>
+
+    <div v-if="$parent.notification.useCustomAPI" class="mb-3">
+        <div class="mb-3">
+            <label for="telegram-bot-name" class="form-label">{{ $t("Bot Name") }}</label>
+            <input
+                id="telegram-bot-name"
+                v-model="$parent.notification.telegramBotName"
+                type="text"
+                class="form-control"
+            />
+        </div>
+
+        <div class="mb-3">
+            <label for="telegram-secret" class="form-label">{{ $t("Secret") }}</label>
+            <HiddenInput
+                id="telegram-secret"
+                v-model="$parent.notification.telegramSecret"
+                autocomplete="new-password"
+            ></HiddenInput>
+        </div>
+
+        <div class="mb-3">
+            <label for="telegram-api-url" class="form-label">{{ $t("Custom API URL") }}</label>
+            <input
+                id="telegram-api-url"
+                v-model="$parent.notification.telegramCustomAPIURL"
+                type="url"
+                class="form-control"
+                placeholder="https://your-worker-url/bot"
+                required
+            />
+        </div>
     </div>
 
     <div class="mb-3">
@@ -12,7 +59,7 @@
 
         <div class="input-group mb-3">
             <input id="telegram-chat-id" v-model="$parent.notification.telegramChatID" type="text" class="form-control" required>
-            <button v-if="$parent.notification.telegramBotToken" class="btn btn-outline-secondary" type="button" @click="autoGetTelegramChatID">
+            <button v-if="$parent.notification.telegramBotToken || $parent.notification.telegramCustomAPIURL" class="btn btn-outline-secondary" type="button" @click="autoGetTelegramChatID">
                 {{ $t("Auto Get") }}
             </button>
         </div>
@@ -70,17 +117,35 @@ export default {
          * @returns {string} formatted URL
          */
         telegramGetUpdatesURL(mode = "masked") {
-            let token = `<${this.$t("YOUR BOT TOKEN HERE")}>`;
-
-            if (this.$parent.notification.telegramBotToken) {
-                if (mode === "withToken") {
-                    token = this.$parent.notification.telegramBotToken;
-                } else if (mode === "masked") {
-                    token = "*".repeat(this.$parent.notification.telegramBotToken.length);
+            if (this.$parent.notification.useCustomAPI) {
+                let baseURL = this.$parent.notification.telegramCustomAPIURL || "";
+                if (!baseURL) {
+                    return "";
                 }
-            }
 
-            return `https://api.telegram.org/bot${token}/getUpdates`;
+                if (!baseURL.startsWith("http://") && !baseURL.startsWith("https://")) {
+                    baseURL = "https://" + baseURL;
+                }
+
+                if (!baseURL.endsWith("/")) {
+                    baseURL += "/";
+                }
+                baseURL += `getUpdates?key=${encodeURIComponent(this.$parent.notification.telegramBotName || "")}`;
+                baseURL += `&secret=${encodeURIComponent(this.$parent.notification.telegramSecret || "")}`;
+                return baseURL;
+            } else {
+                let token = `<${this.$t("YOUR BOT TOKEN HERE")}>`;
+                if (this.$parent.notification.telegramBotToken) {
+                    if (mode === "withToken") {
+                        token = this.$parent.notification.telegramBotToken;
+                    } else if (mode === "masked") {
+                        token = "*".repeat(
+                            this.$parent.notification.telegramBotToken.length
+                        );
+                    }
+                }
+                return `https://api.telegram.org/bot${token}/getUpdates`;
+            }
         },
 
         /**
