@@ -9,7 +9,9 @@ class Telegram extends NotificationProvider {
      */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         const okMsg = "Sent Successfully.";
-        const url = "https://api.telegram.org";
+        const url = notification.useCustomAPI
+            ? (notification.telegramCustomAPIURL || "").replace(/\/+$/, "")
+            : "https://api.telegram.org";
 
         try {
             let params = {
@@ -22,11 +24,15 @@ class Telegram extends NotificationProvider {
                 params.message_thread_id = notification.telegramMessageThreadID;
             }
 
-            await axios.get(`${url}/bot${notification.telegramBotToken}/sendMessage`, {
-                params: params,
-            });
-            return okMsg;
+            if (notification.useCustomAPI) {
+                params.key = notification.telegramBotName;
+                params.secret = notification.telegramSecret;
+                await axios.get(`${url}/sendMessage`, { params });
+            } else {
+                await axios.get(`${url}/bot${notification.telegramBotToken}/sendMessage`, { params });
+            }
 
+            return okMsg;
         } catch (error) {
             this.throwGeneralAxiosError(error);
         }

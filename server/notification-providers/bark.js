@@ -52,23 +52,38 @@ class Bark extends NotificationProvider {
      * @returns {string} Additional URL parameters
      */
     additionalParameters(notification) {
-        // set icon to uptime kuma icon, 11kb should be fine
-        let params = "?icon=" + barkNotificationAvatar;
-        // grouping all our notifications
-        if (notification.barkGroup != null) {
-            params += "&group=" + notification.barkGroup;
-        } else {
-            // default name
-            params += "&group=" + "UptimeKuma";
+        // 构建基础参数
+        let params = new URLSearchParams();
+
+        // 设置图标
+        params.append("icon", notification.barkIconUrl || barkNotificationAvatar);
+
+        // 设置分组
+        params.append("group", notification.barkGroup || "UptimeKuma");
+
+        // 设置声音
+        // params.append("sound", notification.barkSound || "telegraph");
+        if (notification.barkSound) {
+            params.append("sound", notification.barkSound);
         }
-        // picked a sound, this should follow system's mute status when arrival
-        if (notification.barkSound != null) {
-            params += "&sound=" + notification.barkSound;
-        } else {
-            // default sound
-            params += "&sound=" + "telegraph";
+
+        // 添加新功能的参数
+        if (notification.barkIsArchive) {
+            params.append("isArchive", "1");
         }
-        return params;
+
+        if (notification.barkLevel) {
+            params.append("level", "critical");
+            if (notification.barkVolume !== undefined) {
+                params.append("volume", notification.barkVolume.toString());
+            }
+        }
+
+        if (notification.barkContinuousSound) {
+            params.append("call", "1");
+        }
+
+        return `?${params.toString()}`;
     }
 
     /**
@@ -96,21 +111,48 @@ class Bark extends NotificationProvider {
      */
     async postNotification(notification, title, subtitle, endpoint) {
         let result;
+
+        const headers = {};
+
+        if (notification.barkUsername && notification.barkPassword) {
+            const auth = Buffer.from(`${notification.barkUsername}:${notification.barkPassword}`).toString("base64");
+            headers.Authorization = `Basic ${auth}`;
+        }
+
         if (notification.apiVersion === "v1" || notification.apiVersion == null) {
             // url encode title and subtitle
             title = encodeURIComponent(title);
             subtitle = encodeURIComponent(subtitle);
             const params = this.additionalParameters(notification);
-            result = await axios.get(`${endpoint}/${title}/${subtitle}${params}`);
+            result = await axios.get(`${endpoint}/${title}/${subtitle}${params}`, { headers });
         } else {
-            result = await axios.post(`${endpoint}/push`, {
+            const postData = {
                 title,
                 body: subtitle,
-                icon: barkNotificationAvatar,
-                sound: notification.barkSound || "telegraph", // default sound is telegraph
-                group: notification.barkGroup || "UptimeKuma", // default group is UptimeKuma
-            });
+                group: notification.barkGroup || "UptimeKuma",
+                icon: notification.barkIconUrl || barkNotificationAvatar,
+            };
+
+            if (notification.barkSound) {
+                postData.sound = notification.barkSound;
+            }
+
+            if (notification.barkIsArchive) {
+                postData.isArchive = 1;
+            }
+
+            if (notification.barkLevel) {
+                postData.level = "critical";
+                postData.volume = notification.barkVolume || 5;
+            }
+
+            if (notification.barkContinuousSound) {
+                postData.call = 1;
+            }
+
+            result = await axios.post(`${endpoint}/push`, postData, { headers });
         }
+
         this.checkResult(result);
         if (result.statusText != null) {
             return "Bark notification succeed: " + result.statusText;

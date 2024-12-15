@@ -942,5 +942,18 @@
     "Telephone number": "手機號碼",
     "Destination": "收件人",
     "smspartnerSenderName": "SMS 寄件人名稱",
-    "setup a new monitor group": "設定新的監控群組"
+    "setup a new monitor group": "設定新的監控群組",
+    "Bot Name": "機器人名稱",
+    "Secret": "密鑰",
+    "Use Custom API": "使用自訂API",
+    "Custom API URL": "API 網址",
+    "Bark Authorization": "Bark 認證",
+    "Auto Save Notification": "自動儲存通知訊息",
+    "Auto Save Notification Description": "自動儲存通知至 Bark App 歷史紀錄",
+    "Important Alert": "重要警示",
+    "Important Alert Description": "重要警示會忽略靜音設定和勿擾模式，無論裝置是否靜音，通知都會提示並播放聲音。",
+    "Alert Volume": "提示音量",
+    "Continuous Ring": "持續鈴響",
+    "Continuous Ring Description": "通知鈴聲將重複播放30秒，同時收到多個通知時將依序播放鈴聲。",
+    "Custom Icon URL": "自訂推送圖示（需 iOS 15 或以上）"
 }
